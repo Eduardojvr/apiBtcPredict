@@ -13,8 +13,6 @@
   "dependencies": {
     "axios": "^1.7.7",
     "express": "^4.21.1",
-    "node-fetch": "^2.7.0",
-    "regression": "^2.0.1",
-    "ta.js": "^1.16.3"
+    "regression": "^2.0.1"
   }
 }
