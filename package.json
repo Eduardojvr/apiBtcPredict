@@ -1,0 +1,22 @@
+{
+  "name": "bitcoin-predictor",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1" ,
+    "serve": "node predictor.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@tensorflow/tfjs": "^4.22.0",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "axios": "^1.7.7",
+    "express": "^4.21.1",
+    "node-fetch": "^2.7.0",
+    "regression": "^2.0.1",
+    "ta.js": "^1.16.3"
+  }
+}
