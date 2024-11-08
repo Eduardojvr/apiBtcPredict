@@ -3,7 +3,7 @@ const regression = require('regression');  // Biblioteca para regressão linear
 const fetch = require('node-fetch'); // Importando a biblioteca node-fetch
 
 const app = express();
-const port = 80;  // Porta onde a API irá rodar
+const port = 3000;  // Porta onde a API irá rodar
 
 const baseUrl = 'https://data-api.cryptocompare.com/index/cc/v1/historical/days';
 const params = {
