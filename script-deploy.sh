@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Caminho para a chave privada
-KEY_PATH="tmp.key"
+KEY_PATH="locacao.key"
 
 # SSH para o servidor remoto
-ssh -i "$KEY_PATH" ubuntu@164.152.57.178 << 'EOF'
+ssh -i "$KEY_PATH" ubuntu@164.152.44.23 << 'EOF'
     # Comandos a serem executados remotamente via SSH
 
     # Acessar a pasta jvr/codenge
@@ -23,8 +23,8 @@ ssh -i "$KEY_PATH" ubuntu@164.152.57.178 << 'EOF'
     fi
 
     # Executar build da imagem Docker
-    sudo docker build . -t jvr
+    sudo docker build . -t btc
 
     # Executar container Docker expondo a porta 80
-    sudo docker run -d -p 3000:3000 jvr
+    sudo docker run -d -p 3000:3000 btc
 EOF
