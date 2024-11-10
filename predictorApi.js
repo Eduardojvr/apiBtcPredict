@@ -1,6 +1,6 @@
 const express = require('express');  // Biblioteca para criar a API
+const regression = require('regression');  // Biblioteca para regressão linear
 const fetch = require('node-fetch'); // Importando a biblioteca node-fetch
-const tf = require('@tensorflow/tfjs-node'); // TensorFlow.js para Node.js
 
 const app = express();
 const port = 3000;  // Porta onde a API irá rodar
@@ -46,47 +46,30 @@ async function fetchHistoricalData() {
     }
 }
 
-// Função para treinar o modelo usando TensorFlow.js
-async function trainModel(data) {
-    // Normalizando os timestamps
-    const timestamps = data.map(item => item.timestamp);
-    const maxTimestamp = Math.max(...timestamps);
-    const normalizedTimestamps = timestamps.map(ts => ts / maxTimestamp);
+// Função para treinar o modelo de regressão linear
+function trainModel(data) {
+    // Convertendo para um formato adequado para a regressão (x: timestamp, y: preço de fechamento)
+    const trainingData = data.map(item => [item.timestamp, item.close]);
 
-    const prices = data.map(item => item.close);
-    const maxPrice = Math.max(...prices);
-    const normalizedPrices = prices.map(price => price / maxPrice);
+    // Aplicando a regressão linear
+    const result = regression.linear(trainingData);
 
-    const xs = tf.tensor2d(normalizedTimestamps, [normalizedTimestamps.length, 1]);
-    const ys = tf.tensor2d(normalizedPrices, [normalizedPrices.length, 1]);
-
-    // Criando um modelo sequencial com uma camada densa (regressão linear simples)
-    const model = tf.sequential();
-    model.add(tf.layers.dense({ units: 1, inputShape: [1] }));
-    model.compile({ optimizer: 'sgd', loss: 'meanSquaredError' });
-
-    // Treinando o modelo
-    await model.fit(xs, ys, { epochs: 500 });
-
-    return { model, maxTimestamp, maxPrice };
+    return result;
 }
 
 // Função para prever os próximos preços
-async function predictNextPrices(trainedModel, lastTimestamp, numPredictions = 24) {
-    const { model, maxTimestamp, maxPrice } = trainedModel;
+function predictNextPrices(model, numPredictions = 24) {
     const predictions = [];
+    const lastTimestamp = model.points[model.points.length - 1][0];
 
+    // Gerar as previsões para as próximas 24 horas
     for (let i = 1; i <= numPredictions; i++) {
-        const nextTimestamp = (lastTimestamp + i * 3600) / maxTimestamp; // Normalizando
+        const nextTimestamp = lastTimestamp + i * 3600; // Incrementando 1 hora (em segundos)
+        const predictedPrice = model.predict(nextTimestamp)[1];  // Preço previsto
 
-        const inputTensor = tf.tensor2d([nextTimestamp], [1, 1]);
-        const predictedPriceTensor = model.predict(inputTensor);
-        const predictedPriceNormalized = (await predictedPriceTensor.data())[0];
-
-        const predictedPrice = predictedPriceNormalized * maxPrice; // Revertendo a normalização
-
-        const predictedDate = new Date((lastTimestamp + i * 3600) * 1000);
-        const predictedDay = predictedDate.toLocaleDateString('pt-BR');
+        // Converter o timestamp de previsão para formato legível (data e hora)
+        const predictedDate = new Date(nextTimestamp * 1000);
+        const predictedDay = predictedDate.toLocaleDateString('pt-BR');  // Formato dd/mm/yyyy
         const predictedHour = predictedDate.toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit',
@@ -95,9 +78,9 @@ async function predictNextPrices(trainedModel, lastTimestamp, numPredictions = 2
         });
 
         predictions.push({
-            predictedDate,
-            predictedHour,
-            predictedPrice
+            predictedDate,  // Data da previsão
+            predictedHour,  // Hora da previsão
+            predictedPrice  // Preço previsto
         });
     }
 
@@ -112,9 +95,8 @@ app.get('/predict', async (req, res) => {
         return res.status(400).json({ message: 'Sem dados históricos válidos para treinar o modelo.' });
     }
 
-    const trainedModel = await trainModel(historicalData);
-    const lastTimestamp = historicalData[historicalData.length - 1].timestamp;
-    const predictions = await predictNextPrices(trainedModel, lastTimestamp, 24);  // Alterado para 24 horas
+    const model = trainModel(historicalData);
+    const predictions = predictNextPrices(model, 24);  // Alterado para 24 horas
 
     return res.json({
         message: 'Previsões para as próximas 24 horas',
