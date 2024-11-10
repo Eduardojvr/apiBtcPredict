@@ -9,7 +9,7 @@ const baseUrl = 'https://data-api.cryptocompare.com/index/cc/v1/historical/days'
 const params = {
     market: "cadli",
     instrument: "BTC-BRL",
-    limit: 30,  // Obter os últimos 30 dias
+    limit: 365,  // Obter os últimos 365 dias
     aggregate: 1,
     fill: "true",
     apply_mapping: "true",
