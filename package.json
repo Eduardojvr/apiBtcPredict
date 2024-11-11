@@ -14,8 +14,10 @@
     "@tensorflow/tfjs-node": "^4.22.0",
     "axios": "^1.7.7",
     "express": "^4.21.1",
+    "ml-random-forest": "^2.1.0",
     "node-fetch": "^2.7.0",
     "regression": "^2.0.1",
+    "simple-statistics": "^7.8.7",
     "ta.js": "^1.16.3"
   }
 }
